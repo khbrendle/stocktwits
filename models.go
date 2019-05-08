@@ -28,7 +28,7 @@ func (r *Response) UnmarshalJSON(b []byte) error {
 			// fmt.Printf("unmarshalled %v\n", tmpInt)
 			tmp.Status = tmpInt
 		default:
-			fmt.Printf("Response: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Response: unhandled case for key `%v`\n", k)
 		}
 	}
 	*r = tmp
@@ -68,7 +68,7 @@ func (c *Cursor) UnmarshalJSON(b []byte) error {
 			}
 			tmp.Max = tmpInt
 		default:
-			fmt.Printf("Cursor: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Cursor: unhandled case for key `%v`\n", k)
 		}
 	}
 	*c = tmp
@@ -128,7 +128,7 @@ func (s *Symbol) UnmarshalJSON(b []byte) error {
 			}
 			tmp.WatchlistCount = tmpInt
 		default:
-			fmt.Printf("Symbol: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Symbol: unhandled case for key `%v`\n", k)
 		}
 	}
 	*s = tmp
@@ -145,7 +145,8 @@ type Message struct {
 	CreatedAt time.Time // timestamp
 	User
 	Source
-	Symbols        []Symbol
+	Symbols []Symbol
+	ReshareMessage
 	Links          []Link
 	MentionedUsers []string
 	Entities
@@ -174,6 +175,7 @@ func (m *Message) UnmarshalJSON(b []byte) error {
 	var tmpConversation Conversation
 	var tmpLikes Likes
 	var tmpReshares Reshares
+	var tmpReshareMessage ReshareMessage
 	for k, v := range parts {
 		switch k {
 		case "id":
@@ -239,8 +241,13 @@ func (m *Message) UnmarshalJSON(b []byte) error {
 				return err
 			}
 			tmp.Reshares = tmpReshares
+		case "reshare_message":
+			if err = json.Unmarshal(v, &tmpReshareMessage); err != nil {
+				return err
+			}
+			tmp.ReshareMessage = tmpReshareMessage
 		default:
-			fmt.Printf("Message: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Message: unhandled case for key `%v`\n", k)
 		}
 	}
 	*m = tmp
@@ -352,7 +359,7 @@ func (u *User) UnmarshalJSON(b []byte) error {
 			}
 			tmp.Classification = tmpStrings
 		default:
-			fmt.Printf("User: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("User: unhandled case for key `%v`\n", k)
 		}
 	}
 	*u = tmp
@@ -416,7 +423,7 @@ func (s *Source) UnmarshalJSON(b []byte) error {
 			}
 			tmp.ShortenedUrl = tmpString
 		default:
-			fmt.Printf("Source: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Source: unhandled case for key `%v`\n", k)
 		}
 	}
 	*s = tmp
@@ -450,7 +457,7 @@ func (e *Entities) UnmarshalJSON(b []byte) error {
 			}
 			tmp.Sentiment = tmpSentiment
 		default:
-			fmt.Printf("Entities: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Entities: unhandled case for key `%v`\n", k)
 		}
 	}
 	*e = tmp
@@ -495,7 +502,7 @@ func (c *Chart) UnmarshalJSON(b []byte) error {
 			}
 			tmp.Url = tmpString
 		default:
-			fmt.Printf("Chart: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Chart: unhandled case for key `%v`\n", k)
 		}
 	}
 	*c = tmp
@@ -522,7 +529,7 @@ func (s *Sentiment) UnmarshalJSON(b []byte) error {
 			}
 			tmp.Basic = tmpString
 		default:
-			fmt.Printf("Sentiment: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Sentiment: unhandled case for key `%v`\n", k)
 		}
 	}
 	*s = tmp
@@ -598,7 +605,7 @@ func (l *Link) UnmarshalJSON(b []byte) error {
 			}
 			tmp.Source = tmpSource
 		default:
-			fmt.Printf("Link: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Link: unhandled case for key `%v`\n", k)
 		}
 	}
 	*l = tmp
@@ -644,7 +651,7 @@ func (c *Conversation) UnmarshalJSON(b []byte) error {
 			}
 			tmp.Replies = tmpInt
 		default:
-			fmt.Printf("Conversation: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Conversation: unhandled case for key `%v`\n", k)
 		}
 	}
 	*c = tmp
@@ -678,7 +685,7 @@ func (l *Likes) UnmarshalJSON(b []byte) error {
 			}
 			tmp.UserIds = tmpInts
 		default:
-			fmt.Printf("Likes: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Likes: unhandled case for key `%v`\n", k)
 		}
 	}
 	*l = tmp
@@ -712,7 +719,60 @@ func (r *Reshares) UnmarshalJSON(b []byte) error {
 			}
 			tmp.UserIds = tmpInts
 		default:
-			fmt.Printf("Likes: unhandled case for key `%v` with value `%+v`\n", k, v)
+			fmt.Printf("Reshares: unhandled case for key `%v`\n", k)
+		}
+	}
+	*r = tmp
+	return nil
+}
+
+type ReshareMessage struct {
+	ResharedCount         int
+	ResharedDeleted       bool
+	ResharedUserDeleted   bool
+	ParentResharedDeleted bool
+	Message               *Message
+}
+
+func (r *ReshareMessage) UnmarshalJSON(b []byte) error {
+	var err error
+	var parts map[string]json.RawMessage
+	if err = json.Unmarshal(b, &parts); err != nil {
+		return err
+	}
+	var tmp ReshareMessage
+	var tmpInt int
+	var tmpBool bool
+	var tmpMessage *Message
+	for k, v := range parts {
+		switch k {
+		case "reshared_count":
+			if err = json.Unmarshal(v, &tmpInt); err != nil {
+				return err
+			}
+			tmp.ResharedCount = tmpInt
+		case "reshared_deleted":
+			if err = json.Unmarshal(v, &tmpBool); err != nil {
+				return err
+			}
+			tmp.ResharedDeleted = tmpBool
+		case "reshared_user_deleted":
+			if err = json.Unmarshal(v, &tmpBool); err != nil {
+				return err
+			}
+			tmp.ResharedUserDeleted = tmpBool
+		case "parent_reshared_deleted":
+			if err = json.Unmarshal(v, &tmpBool); err != nil {
+				return err
+			}
+			tmp.ParentResharedDeleted = tmpBool
+		case "message":
+			if err = json.Unmarshal(v, &tmpMessage); err != nil {
+				return err
+			}
+			tmp.Message = tmpMessage
+		default:
+			fmt.Printf("ReshareMessage: unhandled case for key `%v`\n", k)
 		}
 	}
 	*r = tmp

@@ -2,6 +2,7 @@ package stocktwits
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -313,4 +314,126 @@ func TestMessageUnmarshal(t *testing.T) {
 	if !reflect.DeepEqual(e, o) {
 		t.Errorf("expected %+v, got %+v", e, o)
 	}
+}
+
+func TestReshareMessageUnmarshal(t *testing.T) {
+	x := []byte(`
+		{
+	    "id": 163021358,
+	    "body": "$AAPL little help to break thru that ichimodu cloud and the golden cross???",
+	    "created_at": "2019-05-04T20:52:15Z",
+	    "user": {
+	      "id": 1577289,
+	      "username": "jhdream",
+	      "name": "Henry",
+	      "avatar_url": "http://avatars.stocktwits.com/images/default_avatar_thumb.jpg",
+	      "avatar_url_ssl": "https://s3.amazonaws.com/st-avatars/images/default_avatar_thumb.jpg",
+	      "join_date": "2018-08-15",
+	      "official": false,
+	      "identity": "User",
+	      "classification": [],
+	      "followers": 11,
+	      "following": 1,
+	      "ideas": 964,
+	      "watchlist_stocks_count": 22,
+	      "like_count": 779
+	    },
+	    "source": {
+	      "id": 1149,
+	      "title": "StockTwits for iOS",
+	      "url": "http://www.stocktwits.com/mobile"
+	    },
+	    "symbols": [
+	      {
+	        "id": 686,
+	        "symbol": "AAPL",
+	        "title": "Apple Inc.",
+	        "aliases": [],
+	        "is_following": false,
+	        "watchlist_count": 297498
+	      }
+	    ],
+	    "reshare_message": {
+	      "reshared_count": 1,
+	      "reshared_deleted": false,
+	      "reshared_user_deleted": false,
+	      "parent_reshared_deleted": false,
+	      "message": {
+	        "id": 163021342,
+	        "body": "$AAPL what’s this about? 🤔 https://www.foxbusiness.com/business-leaders/tim-cook-berkshires-buffett-apple",
+	        "created_at": "2019-05-04T20:51:45Z",
+	        "user": {
+	          "id": 1577289,
+	          "username": "jhdream",
+	          "name": "Henry",
+	          "avatar_url": "http://avatars.stocktwits.com/images/default_avatar_thumb.jpg",
+	          "avatar_url_ssl": "https://s3.amazonaws.com/st-avatars/images/default_avatar_thumb.jpg",
+	          "join_date": "2018-08-15",
+	          "official": false,
+	          "identity": "User",
+	          "classification": [],
+	          "followers": 11,
+	          "following": 1,
+	          "ideas": 964,
+	          "watchlist_stocks_count": 22,
+	          "like_count": 779
+	        },
+	        "source": {
+	          "id": 1149,
+	          "title": "StockTwits for iOS",
+	          "url": "http://www.stocktwits.com/mobile"
+	        },
+	        "symbols": [
+	          {
+	            "id": 686,
+	            "symbol": "AAPL",
+	            "title": "Apple Inc.",
+	            "aliases": [],
+	            "is_following": false,
+	            "watchlist_count": 297498
+	          }
+	        ],
+	        "links": [
+	          {
+	            "title": "Tim Cook 'thrilled' Berkshire's Buffett owns Apple stock",
+	            "url": "https://www.foxbusiness.com/business-leaders/tim-cook-berkshires-buffett-apple",
+	            "shortened_url": "https://www.foxbusiness.com/business-leaders/tim-cook-berkshires-buffett-apple",
+	            "shortened_expanded_url": "foxbusiness.com/business-le...",
+	            "description": "Apple CEO Tim Cookmade a surprise appearance on Saturday at the Berkshire Hathaway annual shareholder meeting in Omaha, Nebraska, strolling the convention center floor where dozens of Warren Buffett-owned business sell their wares. Crowds thronged around the Apple executive, who posed for selfies and shook hands.",
+	            "image": "https://a57.foxnews.com/static.foxbusiness.com/foxbusiness.com/content/uploads/2019/05/0/0/Apple-and-Liz.jpg?ve=1&tl=1",
+	            "created_at": "2019-05-04T20:51:47Z",
+	            "video_url": null,
+	            "source": {
+	              "name": "Fox Business",
+	              "website": "https://www.foxbusiness.com"
+	            }
+	          }
+	        ],
+	        "likes": {
+	          "total": 2,
+	          "user_ids": [
+	            881009,
+	            249801
+	          ]
+	        },
+	        "mentioned_users": [],
+	        "entities": {
+	          "sentiment": {
+	            "basic": "Bullish"
+	          }
+	        }
+	      }
+	    },
+	    "mentioned_users": [],
+	    "entities": {
+	      "sentiment": null
+	    }
+	  }
+		`)
+	var o Message
+	var err error
+	if err = json.Unmarshal(x, &o); err != nil {
+		t.Error(err)
+	}
+	fmt.Printf("%+v\n", *o.ReshareMessage.Message)
 }

@@ -35,7 +35,7 @@ func GetStreamSymbol(s string, params map[string]interface{}) (*http.Response, e
 	var err error
 	url := FormatUrl(s, params)
 	var resp *http.Response
-	fmt.Println("Getting data")
+	// fmt.Println("Getting data")
 	if resp, err = http.Get(url); err != nil {
 		return resp, err
 	}
